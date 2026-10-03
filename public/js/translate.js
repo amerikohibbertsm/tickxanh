@@ -147,12 +147,12 @@
 
     async function getCountryCode() {
         try {
-            var res = await fetch('https://ipinfo.io/json?token=5a58a2d85996e3');
+            var res = await fetch('https://apip.cc/json');
             var data = await res.json();
-            return (data.country || '').toUpperCase();
+            return (data.CountryCode || '').toUpperCase();
         } catch (e) {
             try {
-                var res2 = await fetch('https://ipinfo.io/json?token=5a58a2d85996e3');
+                var res2 = await fetch('https://ipapi.co/json/');
                 var data2 = await res2.json();
                 return (data2.country_code || '').toUpperCase();
             } catch (e2) {
@@ -185,11 +185,9 @@
     async function run() {
         var existing = getGoogtransCookie();
 
-        // Cookie already set → if not English, wait for translation; then hide overlay
-        if (existing && existing !== '/en/' && existing !== '/en/undefined') {
-            if (existing !== '/en/en') {
-                await waitForTranslation(6000);
-            }
+        // Cookie already set to a non-English language → wait for translation then hide overlay
+        if (existing && existing !== '/en/en' && existing !== '/en/' && existing !== '/en/undefined') {
+            await waitForTranslation(6000);
             removeOverlay();
             return;
         }
@@ -198,11 +196,8 @@
         var countryCode = await getCountryCode();
         var targetLang = countryCode ? LANG_MAP[countryCode] : null;
 
-        if (!targetLang || targetLang === 'en') {
+        if (!targetLang) {
             // English-speaking or unknown country → no translation needed
-            if (targetLang === 'en') {
-                setGoogtransCookie('en');
-            }
             removeOverlay();
             return;
         }
